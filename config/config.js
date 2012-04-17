@@ -1,3 +1,4 @@
+var fs = require('fs');
 module.exports = config = {
   "name" : "Hummingbird",
 
@@ -11,9 +12,9 @@ module.exports = config = {
   "udp_port" : 8000,
 
   "enable_dashboard" : true,
-
-  "capistrano" : {
-    "repository" :       "git://github.com/mnutt/hummingbird.git",
-    "hummingbird_host" : "hummingbird.your-host.com"
-  }
+  
+  "https": true,
+  
+  "https_key": fs.readFileSync("/path/to/key.pem"),
+  "https_cert": fs.readFileSync("/path/to/cert.pem")
 }

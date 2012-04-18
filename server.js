@@ -17,21 +17,20 @@ db.addListener("error", function (error) {
 db.open(function (p_db) {
   var hummingbird = new Hummingbird();
   hummingbird.init(db, function () {
-    var server_callback = function (req, res) {
+    var server;
+    if (config.https) {
+      server = https.createServer({'key': config.https_key, 'cert': config.https_cert});
+    }
+    else {
+      server = http.createServer();
+    }
+    server.on('request',function (req, res) {
       try {
         hummingbird.serveRequest(req, res);
       } catch (e) {
         hummingbird.handleError(req, res, e);
       }
-    },
-      server;
-
-    if (config.https) {
-      server = http.createServer(server_callback);
-    }
-    else {
-      server = https.createServer({'key': config.https_key, 'cert': config.https_cert},server_callback);
-    }
+    });
     
     if (config.tracking_ip) {
       server.listen(config.tracking_port,config.tracking_ip);
@@ -44,24 +43,21 @@ db.open(function (p_db) {
     if (config.enable_dashboard) {
       var file = new(node_static.Server)('./public');
 
-      var dashboardServer_callback = function (request, response) {
+      var dashboardServer;
+      if (config.https) {
+        dashboardServer = https.createServer({'key': config.https_key, 'cert': config.https_cert});
+      }
+      else {
+        dashboardServer = http.createServer();
+      }
+      dashboardServer.on('request',function (request, response) {
         request.addListener('end', function () {
           file.serve(request, response);
         });
-      };
-
-      var dashboardServer;
-
-      if (config.https) {
-        dashboardServer = http.createServer(dashboardServer_callback);
-      }
-      else {
-        dashboardServer = https.createServer({'key': config.https_key, 'cert': config.https_cert},dashboardServer_callback);
-      }
+      });
 
       dashboardServer.listen(config.dashboard_port);
       console.log('Dashboard server running at http'+(config.https? 's' : '')+'://*:'+config.dashboard_port);
-
       console.log('Web Socket server running at ws://*:'+config.dashboard_port);
     } 
     else {

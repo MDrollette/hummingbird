@@ -13,8 +13,8 @@ module.exports = config = {
 
   "enable_dashboard" : true,
   
-  "https": true,
+  //required if using https
+  //"https_key": fs.readFileSync("/path/to/key.pem"),
+  //"https_cert": fs.readFileSync("/path/to/cert.pem"),
   
-  "https_key": fs.readFileSync("/path/to/key.pem"),
-  "https_cert": fs.readFileSync("/path/to/cert.pem")
-}
+  "https": false

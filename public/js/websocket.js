@@ -1,6 +1,7 @@
 if(!Hummingbird) { var Hummingbird = {}; }
 
-Hummingbird.WebSocket = function() {
+Hummingbird.WebSocket = function(url) {
+  this.url = url;
   this.state = "stopped";
 };
 
@@ -39,7 +40,8 @@ Hummingbird.WebSocket.prototype = {
     // Functions that extract data and update UI elements
     this.handlers = [];
 
-    this.socket = io.connect(this.webSocketURI(), {port: this.webSocketPort()});
+    console.log('connecting to '+this.url);
+    this.socket = io.connect(this.url);
 
     var self = this;
 
@@ -54,25 +56,6 @@ Hummingbird.WebSocket.prototype = {
     }
     return true;
   },
-
-  webSocketURI: function() {
-    if(document.location.search.match(/ws_server/)) {
-      var wsServerParam = document.location.search.match(/ws_server=([^\&\#]+)/) || [];
-      var wsPortParam = document.location.search.match(/ws_port=([^\&\#]+)/) || [];
-      var wsServer = wsServerParam[1];
-    } else {
-      var wsServer = document.location.hostname;
-    }
-    return wsServer;
-  },
-
-  webSocketPort: function() {
-    if(document.location.search.match(/ws_server/)) {
-      var wsPortParam = document.location.search.match(/ws_port=([^\&\#]+)/) || [];
-      return wsPortParam;
-    }
-    return document.location.port;
-  }
 }
 
 $.fn.hummingbirdGraph = function(socket, options) {

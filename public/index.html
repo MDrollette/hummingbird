@@ -1,117 +1,110 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
-  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<!DOCTYPE html>
 <html>
+  <head>
+    <script src="js/jquery-1.7.min.js"></script>
+    <script src="js/helpers.js"></script>
+    <script src="js/websocket.js"></script>
+    <script src="js/polymaps.js"></script>
+    <script src="js/polymaps-extras.js"></script>
+    <script src="js/widgets/cart_events.js"></script>
+    <script src="js/hummingbird.js"></script>
+    <title>Shopping Cart Events</title>
+    <link rel="shortcut icon" type="image/png" href="images/favicon.png" />
+    <link rel="stylesheet" media="all" href="css/main.css" />
+    
+    <script>
+      $(document).ready(function () {
+        HummingbirdTracker.setTrackingServer("http://localhost:8000/");
+      
+        //when the current product is switched (for simulating tracking calls)
+        var product = $('#product_select').val();
+        $('#product_select').change(function () {
+          product = $(this).val();
+        },true);
 
-<head>
-  <script src="/js/jquery-1.7.min.js"></script>
-
-  <script src="/socket.io/socket.io.js"></script>
-  <script>
-    WEB_SOCKET_SWF_LOCATION = '/socket.io/WebSocketMain.swf';
-  </script>
-
-  <script src="/js/helpers.js"></script>
-
-  <script src="/js/websocket.js"></script>
-  <script src="/js/polymaps.js"></script>
-  <script src="/js/polymaps-extras.js"></script>
-
-  <script src="/js/widgets/base.js"></script>
-  <script src="/js/widgets/logger.js"></script>
-  <script src="/js/widgets/graph.js"></script>
-  <script src="/js/widgets/count.js"></script>
-  <script src="/js/widgets/map.js"></script>
-
-  <title>Hummingbird</title>
-
-  <link rel="shortcut icon" type="image/png" href="/images/favicon.png" />
-
-  <link rel="stylesheet" media="all" href="/css/main.css" />
-  <link rel="stylesheet" media="all" href="/css/map.css" />
-  <link rel="stylesheet" media="all" href="/css/weekly.css" />
-</head>
-
-<body>
-
-  <h1>Hummingbird</h1>
-
-  <div class="hummingbird_graph" id="total">
-
-    <h2 class="graph_title">All Traffic: <span class="value">0</span> Pageviews / Second</h2>
-
-    <div class="axis_left"></div>
-    <div class="graph"></div>
-    <div class="axis_right"></div>
-
-  </div>
-
-  <div style="clear: both;"></div>
-
-  <div class="hummingbird_graph" id="cart_adds">
-
-    <h2 class="graph_title">Cart Traffic:</h2>
-
-    <div class="axis_left"></div>
-    <div class="graph"></div>
-    <div class="axis_right"></div>
-
-  </div>
-
-  <div style="clear: both;"></div>
-
-  <button id="test_it" style="margin-left: 60px;">Send test traffic</button>
-  <button id="test_cart" style="margin-left: 60px;">Send test traffic to cart</button>
-
-  <div style="clear: both;"></div>
-
-  <div id="map_container" style="margin: 40px; width: 800px; height: 450px; position: relative;"></div>
-
-  <script>
-    $(document).ready(function() {
-      hummingbirdSocket = new Hummingbird.WebSocket();
+        //handle various simulated tracking calls
+        $('#shipping_info').click(function () {
+          HummingbirdTracker.track({
+            'events': 'shipping_info',
+            'products': product
+          },true);
+          return false;
+        });
+        $('#billing_info').click(function () {
+          HummingbirdTracker.track({
+            'events': 'billing_info',
+            'products': product
+          },true);
+          return false;
+        });
+        $('#confirmation').click(function () {
+          HummingbirdTracker.track({
+            'events': 'confirmation',
+            'products': product
+          },true);
+          return false;
+        });
+        $('#purchase').click(function () {
+          HummingbirdTracker.track({
+            'events': 'purchase',
+            'products': product
+          },true);
+          return false;
+        });
+        
+        //instantiate a new CartEvents object that will handle displaying graphs
+        new Hummingbird.CartEvents($('#shopping_info'), hummingbirdSocket.socket, {
+          starting_counts: {}, 
+          starting_revenue: {}
+        });
+      });
+    </script>
+  </head>
+  
+  <body>
+    <h1>Shopping Cart Events</h1>
+    <div style="clear: both;"></div>
+    <div id='shopping_info'></div>
+    <div style='clear:both;'></div>
+    <div>
+      <div class='bar_holder'>
+        <div class='shipping_info' style='float:none;clear:both;'>
+          <div class='bar' style='width:20px;height:20px;float:left;margin-right: 10px;'></div>View Shipping Info Form</div>
+        <div class='billing_info' style='float:none;clear:both;'>
+          <div class='bar' style='width:20px;height:20px;float:left;margin-right: 10px;'></div>View Billing Info Form</div>
+        <div class='confirmation' style='float:none;clear:both;'>
+          <div class='bar' style='width:20px;height:20px;float:left;margin-right: 10px;'></div>View Review Page</div>
+        <div class='purchase' style='float:none;clear:both;'>
+          <div class='bar' style='width:20px;height:20px;float:left;margin-right: 10px;'></div>Complete Purchase</div>
+      </div>
+    </div>
+    <div style="clear: both;"></div>
+    <hr />
+    <h2>Simulate Tracking Pixels</h2>
+    <p>
+      <a href='#' id='shipping_info'>Shipping Info</a> |
+      <a href='#' id='billing_info'>Billing Info</a> |
+      <a href='#' id='confirmation'>Confirmation</a> |
+      <a href='#' id='purchase'>Purchase</a>
+    </p>
+    <div style="clear: both;"></div>Product:
+    <select id='product_select'>
+      <option value=';BOX-S-12M-R;1;299.88'>1 year subscription</option>
+      <option value=';BOX-S-1M-R;1;29.99'>1 month subscription</option>
+      <option value=';BOX-S-3M-G;1;89.00'>3 month gift subscription</option>
+      <option value=';BOX-S-6M-G;1;149.00'>6 month gift subscription</option>
+      <option value=';BOX-S-12M-G;1;299.00'>1 year gift subscription</option>
+    </select>
+    
+    
+        <script src="http://localhost:8080/socket.io/socket.io.js"></script>
+    <script>
+      WEB_SOCKET_SWF_LOCATION = 'http://localhost:8080/socket.io/WebSocketMain.swf';
+    </script>
+    <script>
+      hummingbirdSocket = new Hummingbird.WebSocket('http://localhost:8080/');
       hummingbirdSocket.start();
+    </script>
+  </body>
 
-      $("#total").hummingbirdGraph(hummingbirdSocket.socket,
-                                 {
-                                   from: "view_totals"
-                                 });
-
-      $("#cart_adds").hummingbirdGraph(hummingbirdSocket.socket,
-                                       {
-                                         from: "cart_adds",
-                                         graphHeight: 100
-                                       });
-
-      $("#total h2.graph_title span.value").hummingbirdCount(hummingbirdSocket.socket,
-                                                             {
-                                                               from: "view_totals",
-                                                               every: 10
-                                                             });
-
-      $("#map_container").hummingbirdMap(hummingbirdSocket.socket, { from: "location" });
-
-      new Hummingbird.Logger(window,
-                             hummingbirdSocket.socket,
-                             {
-                               from: "cart_adds",
-                               every: 20
-                             });
-
-      $("#test_it").click(function(e) {
-        e.preventDefault();
-
-        var img = document.createElement('img');
-        img.src = "http://localhost:8000/tracking_pixel.gif?f=" + Math.ceil(Math.random() * 1000000)
-      });
-
-      $("#test_cart").click(function(e) {
-        e.preventDefault();
-
-        var img = document.createElement('img');
-        img.src = "http://localhost:8000/tracking_pixel.gif?events=scAdd&f=" + Math.ceil(Math.random() * 1000000)
-      });
-    });
-  </script>
-
-</body>
 </html>

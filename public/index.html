@@ -20,7 +20,7 @@
         var product = $('#product_select').val();
         $('#product_select').change(function () {
           product = $(this).val();
-        },true);
+        });
 
         //handle various simulated tracking calls
         $('#shipping_info').click(function () {
@@ -53,9 +53,18 @@
         });
         
         //instantiate a new CartEvents object that will handle displaying graphs
-        new Hummingbird.CartEvents($('#shopping_info'), hummingbirdSocket.socket, {
+        var metrics = ['shipping_info','billing_info','confirmation','purchase'];
+        var cart_events = new Hummingbird.CartEvents($('#shopping_info'), hummingbirdSocket.socket, {
           starting_counts: {}, 
-          starting_revenue: {}
+          starting_revenue: {},
+          metrics: metrics
+        });
+
+        //seed the CartEvents graph with the past 10 days worth of data
+        $.each(metrics,function(i,metric) {
+          hummingbirdSocket.socket.emit('past data '+metric,10,'days',function(data) {
+            cart_events.onData(metric,data);
+          });
         });
       });
     </script>
@@ -89,15 +98,12 @@
     </p>
     <div style="clear: both;"></div>Product:
     <select id='product_select'>
-      <option value=';BOX-S-12M-R;1;299.88'>1 year subscription</option>
-      <option value=';BOX-S-1M-R;1;29.99'>1 month subscription</option>
-      <option value=';BOX-S-3M-G;1;89.00'>3 month gift subscription</option>
-      <option value=';BOX-S-6M-G;1;149.00'>6 month gift subscription</option>
-      <option value=';BOX-S-12M-G;1;299.00'>1 year gift subscription</option>
+      <option value=';SKU1;1;9.99'>Product 1 ($9.99)</option>
+      <option value=';SKU2;1;25.00'>Product 2 ($25.00)</option>
+      <option value=';SKU3;1;99.99'>Product 3 ($99.99)</option>
     </select>
     
-    
-        <script src="http://localhost:8080/socket.io/socket.io.js"></script>
+    <script src="http://localhost:8080/socket.io/socket.io.js"></script>
     <script>
       WEB_SOCKET_SWF_LOCATION = 'http://localhost:8080/socket.io/WebSocketMain.swf';
     </script>

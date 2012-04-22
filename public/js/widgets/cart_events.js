@@ -4,11 +4,13 @@ if (!Hummingbird) {
 
 Hummingbird.CartEvents = function (element, socket, options) {
   var defaults = {
-    starting_counts: {}
+    starting_counts: {},
+    starting_revenue: {},
+    metrics: ['shipping_info','billing_info','confirmation','purchase']
   }
 
   this.element = element;
-  this.options = $.extend(defaults, options);
+  this.options = $.extend({},defaults, options);
   this.socket = socket;
   this.initialize();
 };
@@ -33,49 +35,33 @@ Hummingbird.CartEvents.prototype = {
   registerHandler: function () {
     var self = this;
 
-    this.socket.on('shipping_info', function (data) {
-      self.onData('shipping_info', data);
+    $.each(self.options.metrics,function(i,metric) {
+      self.socket.on(metric, function (data) {
+        self.onData(metric, data);
+      });
     });
-    this.socket.on('billing_info', function (data) {
-      self.onData('billing_info', data);
-    });
-    this.socket.on('confirmation', function (data) {
-      self.onData('confirmation', data);
-    });
-    this.socket.on('purchase', function (data) {
-      self.onPurchase(data);
-    });
-  },
-
-  onPurchase: function (message) {
-    var self = this;
-    var changed = false;
-    for (var i in message) {
-      self.counts[i] = self.counts[i] || {};
-      self.counts[i]['purchase'] = self.counts[i]['purchase'] || 0;
-      self.counts[i]['purchase'] += message[i]['purchase'];
-      
-      self.revenue[i] = (self.revenue[i] || 0) + message[i].revenue*1;
-      
-      changed = true;
-    }
-    if (changed) {
-      self.update();
-    }
   },
 
   onData: function (type, message) {
     var self = this;
     var changed = false;
     for (var i in message) {
-      self.counts[i] = self.counts[i] || {
-        'shipping_info': 0,
-        'billing_info': 0,
-        'confirmation': 0,
-        'purchase': 0
-      };
+      //initial data for product
+      if(!self.counts[i]) {
+        self.counts[i] = {};
+        $.each(self.options.metrics,function(j,metric) {
+          self.counts[i][metric] = 0;
+        });
+      }
+      if(!self.revenue[i]) self.revenue[i] = 0.0;
+
       self.counts[i][type] = self.counts[i][type] || 0;
       self.counts[i][type] += message[i][type];
+
+      //if revenue is passed in with this event, record it
+      if(message[i].revenue) {
+        self.revenue[i] = (self.revenue[i] || 0) + message[i].revenue*1;
+      }
 
       changed = true;
     }
@@ -98,8 +84,16 @@ Hummingbird.CartEvents.prototype = {
       //update the existing chart
       if (self.chartdivs[i]) {
         self.updateDiv(i, this.counts[i], this.revenue[i]);
-      } else {
-        self.chartdivs[i] = $('<div />').addClass('graph').html('<h2>' + i + '</h2><div class="bar_holder"><div class="shipping_info"><div class="spacer"></div><div class="bar"></div></div><div class="billing_info"><div class="spacer"></div><div class="bar"></div></div><div class="confirmation"><div class="spacer"></div><div class="bar"></div></div><div class="purchase"><div class="spacer"></div><div class="bar"></div></div></div><div class="revenue"></div>').appendTo(self.element);
+      } 
+      //build initial chart html
+      else {
+        var html = '<h2>' + i + '</h2><div class="bar_holder">';
+        $.each(self.options.metrics,function(j,metric) {
+          html += '<div class="'+metric+'"><div class="spacer"></div><div class="bar"></div></div>';
+        });
+        html += '</div><div class="revenue"></div>';
+
+        self.chartdivs[i] = $('<div />').addClass('graph').html(html).appendTo(self.element);
         self.updateDiv(i, this.counts[i], this.revenue[i]);
       }
 
@@ -114,7 +108,11 @@ Hummingbird.CartEvents.prototype = {
 
   updateDiv: function (product, data, revenue) {
     var self = this;
-    var max = Math.max(data.shipping_info, data.billing_info, data.confirmation, data.purchase);
+
+    var max = 0;
+    $.each(self.options.metrics,function(i,metric) {
+      if(data[metric] > max) max = data[metric];
+    });
 
     for (var i in data) {
       var height = Math.floor(data[i] * 100 / max);
@@ -122,7 +120,6 @@ Hummingbird.CartEvents.prototype = {
       $('.' + i + ' .bar', self.chartdivs[product]).css('height', height + 'px');
 
       $('.revenue', self.chartdivs[product]).html('$' + (revenue || 0).toFixed(2));
-
     }
   }
 };

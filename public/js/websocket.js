@@ -57,13 +57,3 @@ Hummingbird.WebSocket.prototype = {
     return true;
   },
 }
-
-$.fn.hummingbirdGraph = function(socket, options) {
-  if(this.length == 0) { return; }
-
-  this.each(function() {
-    new Hummingbird.WebSocket.Graph($(this), socket, options);
-  });
-
-  return this;
-};

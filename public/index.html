@@ -60,19 +60,43 @@
           metrics: metrics
         });
 
-        //seed the CartEvents graph with the past 10 days worth of data
-        $.each(metrics,function(i,metric) {
-          hummingbirdSocket.socket.emit('past data '+metric,10,'days',function(data) {
-            cart_events.onData(metric,data);
+
+        //hook up the form to load past data
+        $('#load_past_data input').click(function() {
+          //hide the form so we only submit it once
+          $('#load_past_data').css('display','none');
+          
+          var val = $('#load_past_data select').val();
+          var num = val.split(' ')[0];
+          var time_unit = val.split(' ')[1];
+          $.each(metrics,function(i,metric) {
+            hummingbirdSocket.socket.emit('past data '+metric,num,time_unit,function(data) {
+              cart_events.onData(metric,data);
+            });
           });
+          return false;
         });
       });
     </script>
   </head>
   
   <body>
-    <h1>Shopping Cart Events</h1>
-    <div style="clear: both;"></div>
+  <h1>Shopping Cart Events</h1>
+    <div id='load_past_data'>
+      Load data from past
+      <select>
+        <option value='1 hour'>1 hour</option>
+        <option value='6 hours'>6 hours</option>
+        <option value='12 hours'>12 hours</option>
+        <option value='1 day'>1 day</option>
+        <option value='3 days'>3 days</option>
+        <option value='7 days'>7 days</option>
+        <option value='14 days'>14 days</option>
+        <option value='30 days'>30 days</option>
+        <option value='60 days'>60 days</option>
+      </select>
+      <input type='button' value='Go' />
+    </div>
     <div id='shopping_info'></div>
     <div style='clear:both;'></div>
     <div>

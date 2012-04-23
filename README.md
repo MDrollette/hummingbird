@@ -22,14 +22,14 @@ Requirements
 Installation
 --------------
 
-    git clone git://github.com/mnutt/hummingbird.git
+    git clone git://github.com/jdorn/hummingbird.git
     cd hummingbird
 
     # Use npm to install the dependencies
     npm install
 
     # Copy the default configuration file
-    cp config/app.json.sample config/app.json
+    cp config/config.js.sample config/config.js
 
     # To use the map, download MaxMind's GeoIP database and extract to the root directory:
     wget http://geolite.maxmind.com/download/geoip/database/GeoLiteCity.dat.gz
@@ -45,7 +45,7 @@ To start the analytics server, run the following:
     node server.js
 
 By default a dashboard will be run on port 8080.  You can disable it for production use in
-config/app.json.  The dashboard is just html served out of public/; you can serve it using
+config/config.js.  The dashboard is just html served out of public/; you can serve it using
 any webserver.
 
 

@@ -16,7 +16,7 @@ db.addListener("error", function (error) {
 
 db.open(function (p_db) {
   var hummingbird = new Hummingbird();
-  hummingbird.init(db, function () {
+  hummingbird.init(db, config, function () {
     var server;
     if (config.https) {
       server = https.createServer({'key': config.https_key, 'cert': config.https_cert});
@@ -69,7 +69,7 @@ db.open(function (p_db) {
     io.set('log level', 2);
 
     hummingbird.io = io;
-    hummingbird.addAllMetrics(io, db);
+    hummingbird.addAllMetrics(io, db, config.metric_options);
 
     if (config.udp_address) {
       var udpServer = dgram.createSocket("udp4");

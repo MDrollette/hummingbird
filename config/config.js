@@ -1,32 +1,51 @@
-var fs = require('fs');
+//fs is needed to read in key and cert files when using https
+//var fs = require('fs');
+
+
 module.exports = config = {
-  "name" : "Hummingbird",
-
+  //server config for the tracking pixel
+  //if an ip is provided, the server will only listen on that ip
   "tracking_port" : 8000,
-  "dashboard_port" : 8080,
+  "tracking_hostname" : false,
 
-  "mongo_host" : "localhost",
-  "mongo_port" : 27017,
-
-  "udp_address" : "127.0.0.1",
-  "udp_port" : 8000,
-
+  //server config for the dashboard server
+  //this just serves up static files out of the /public directory
+  //this can be hosted anywhere are doesn't need to be done through node.js
   "enable_dashboard" : true,
+  "dashboard_port" : 8080,
+  "dashboard_hostname" : false,
+
+  //anyone with access to the websocket can view all analytics data,
+  //so make sure this is protected if you care about privacy
+  //if port is set to false, socket.io will listen to the dashboard server or
+  //the tracking server if the dashboard is disabled
+  "websocket_port" : false,
+  "websocket_hostname" : false,
+  "websocket_log_level" : 2,
+
+  //MongoDB config
+  "mongo_port" : 27017,
+  "mongo_hostname" : "localhost",
+
+  //udp config
+  //incomming data to the udp server will behave just like an incomming tracking pixel
+  "enable_udp": true,
+  "udp_port" : 8000,
+  "udp_hostname" : "127.0.0.1",
   
-  //if set to an integer, the visits collection in Mongo
-  //(i.e. the one that has a document for every tracking pixel fired)
-  //will be a capped collection with this many bytes max.
-  //the oldest entries will be deleted first to make space.
-  //If set to false or a non-integer, the collection will not be capped.
-  "visits_capped" : 100000000,
+  //the visits collection creates a document for every incomming tracking pixel
+  //this options is the maximum size in bytes that the collection can be
+  //the oldest documents will be discarded first if space is needed
+  //set this to false to not use a capped collection
+  "capped_visits_collection" : 100000000,
 
-  //if set to true, both the tracking pixel and dashboard will be served under https
-  "https": false,
-
-  //required parameters if using https
+  //https settings
+  //if turned on, both the tracking pixel and dashboard will be served under https
+  "enable_https": false,
   //"https_key": fs.readFileSync("/path/to/key.pem"),
   //"https_cert": fs.readFileSync("/path/to/cert.pem"),
   
+  //additional options for metric data
   'metric_options': {
     //don't store minute data in Mongo, only hour and daily data
     'minutes': false,

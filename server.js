@@ -7,7 +7,7 @@ var http = require('http'),
   mongo = require('mongodb'),
   Hummingbird = require('./lib/hummingbird').Hummingbird;
 
-var db = new mongo.Db('hummingbird', new mongo.Server(config.mongo_hostname, config.mongo_port, {}), {});
+var db = new mongo.Db(config.database_name, new mongo.Server(config.mongo_hostname, config.mongo_port, {}), {});
 
 db.addListener("error", function (error) {
   console.log("Error connecting to mongo -- perhaps it isn't running?");
@@ -90,7 +90,7 @@ db.open(function (p_db) {
     io.set('log level', config.websocket_log_level);
 
     hummingbird.io = io;
-    hummingbird.addAllMetrics(io, db, config.metric_options);
+    hummingbird.addAllMetrics(io, db, config);
 
     if (config.enable_udp) {
       var udpServer = dgram.createSocket("udp4");

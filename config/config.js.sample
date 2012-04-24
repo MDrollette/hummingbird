@@ -3,6 +3,12 @@
 
 
 module.exports = config = {
+  //if turned on, both the tracking pixel and dashboard will be served under https
+  "enable_https": false,
+  //"https_key": fs.readFileSync("/path/to/key.pem"),
+  //"https_cert": fs.readFileSync("/path/to/cert.pem"),
+  
+  
   //server config for the tracking pixel
   //if an ip is provided, the server will only listen on that ip
   "tracking_port" : 8000,
@@ -33,23 +39,29 @@ module.exports = config = {
   "udp_port" : 8000,
   "udp_hostname" : "127.0.0.1",
   
-  //the visits collection creates a document for every incomming tracking pixel
-  //this options is the maximum size in bytes that the collection can be
-  //the oldest documents will be discarded first if space is needed
-  //set this to false to not use a capped collection
-  "capped_visits_collection" : 100000000,
-
-  //https settings
-  //if turned on, both the tracking pixel and dashboard will be served under https
-  "enable_https": false,
-  //"https_key": fs.readFileSync("/path/to/key.pem"),
-  //"https_cert": fs.readFileSync("/path/to/cert.pem"),
+  //general MongoDB config
+  "database_name": "hummingbird",
   
-  //additional options for metric data
-  'metric_options': {
-    //don't store minute data in Mongo, only hour and daily data
-    'minutes': false,
-    //don't output to console every minute
-    'log': false
-  }
+  //config for the visits MongoDB collection (i.e. the one that records every tracking pixel request)
+  "visits_collection": "visits",
+  "visits_collection_options": {
+    capped: true,
+    size: 1000000000  //keep latest 100MB of visits data
+  },
+  
+  //config for other MongoDB collections (ones used to store aggregate metric data)
+  "enabled_minute_collection": true,
+  "minute_collection": "metrics_minute",
+  "minute_collection_options": {
+    capped: true,
+    size: 1000000000, //keep latest 100MB of minute data
+    max: 1440 //keep at most a day's worth of minute data
+  },
+  "hour_collection": "metrics_hour",
+  "hour_collection_options": {},
+  "day_collection": "metrics_day",
+  "day_collection_options": {},
+
+  //every minute, hummingbird can output the aggregate data it is storing in MongoDB to the console
+  "log_metric_data": false
 }

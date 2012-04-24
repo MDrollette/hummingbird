@@ -12,10 +12,18 @@
     <link rel="shortcut icon" type="image/png" href="images/favicon.png" />
     <link rel="stylesheet" media="all" href="css/main.css" />
     
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      WEB_SOCKET_SWF_LOCATION = '/socket.io/WebSocketMain.swf';
+    </script>
+    <script>
+      hummingbirdSocket = new Hummingbird.WebSocket('/');
+      hummingbirdSocket.start();
+      HummingbirdTracker.setTrackingServer("http://localhost:8000/");
+    </script>
+    
     <script>
       $(document).ready(function () {
-        HummingbirdTracker.setTrackingServer("http://localhost:8000/");
-      
         //when the current product is switched (for simulating tracking calls)
         var product = $('#product_select').val();
         $('#product_select').change(function () {
@@ -79,7 +87,6 @@
       });
     </script>
   </head>
-  
   <body>
   <h1>Shopping Cart Events</h1>
     <div id='load_past_data'>
@@ -126,15 +133,6 @@
       <option value=';SKU2;1;25.00'>Product 2 ($25.00)</option>
       <option value=';SKU3;1;99.99'>Product 3 ($99.99)</option>
     </select>
-    
-    <script src="http://localhost:8080/socket.io/socket.io.js"></script>
-    <script>
-      WEB_SOCKET_SWF_LOCATION = 'http://localhost:8080/socket.io/WebSocketMain.swf';
-    </script>
-    <script>
-      hummingbirdSocket = new Hummingbird.WebSocket('http://localhost:8080/');
-      hummingbirdSocket.start();
-    </script>
   </body>
 
 </html>

@@ -2,49 +2,39 @@ if (!Hummingbird) {
   var Hummingbird = {};
 }
 
+//constructor
 Hummingbird.CartEvents = function (element, socket, options) {
-  var defaults = {
-    starting_counts: {},
-    starting_revenue: {},
-    metrics: ['shipping_info','billing_info','confirmation','purchase']
-  }
-
   this.element = element;
-  this.options = $.extend({},defaults, options);
   this.socket = socket;
-  this.initialize();
+  
+  this.initialize(options);
 };
 
-Hummingbird.CartEvents.prototype = {
-  updating: false,
-  counts: {},
-  chartdivs: {},
-  revenue: {},
+//inherit HummingbirdBase
+Hummingbird.CartEvents.prototype = HummingbirdBase;
 
-  initialize: function () {
-    if (typeof this.options.starting_counts != 'object') this.counts = {};
-    else this.counts = this.options.starting_counts;
-
-    if (this.options.starting_revenue) this.revenue = this.options.starting_revenue;
-
-    this.update();
-
+//override methods and add custom properties
+$.extend(Hummingbird.CartEvents.prototype,{  
+  initialize: function(options) {
+    var defaults = {
+      metrics: ['shipping_info','billing_info','confirmation','purchase'],
+      every: 100
+    };
+    
+    this.options = $.extend({},defaults, options);  
+    
+    //initialize variables
+    this.chartdivs = {};
+    this.counts = {};
+    this.revenue = {};
+    
+    //register socket listener
     this.registerHandler();
   },
 
-  registerHandler: function () {
-    var self = this;
-
-    $.each(self.options.metrics,function(i,metric) {
-      self.socket.on(metric, function (data) {
-        self.onData(metric, data);
-      });
-    });
-  },
-
+  //handle incoming requests
   onData: function (type, message) {
     var self = this;
-    var changed = false;
     for (var i in message) {
       //initial data for product
       if(!self.counts[i]) {
@@ -62,23 +52,12 @@ Hummingbird.CartEvents.prototype = {
       if(message[i].revenue) {
         self.revenue[i] = (self.revenue[i] || 0) + message[i].revenue*1;
       }
-
-      changed = true;
-    }
-
-    if (changed) {
-      self.update();
     }
   },
 
+  //initialize/update the graphs and chart data
   update: function () {
     var self = this;
-    if (self.updating) {
-      self.needs_updating = true;
-      return;
-    }
-    self.updating = true;
-    self.needs_updating = false;
 
     for (var i in this.counts) {
       //update the existing chart
@@ -99,13 +78,9 @@ Hummingbird.CartEvents.prototype = {
 
       this.counts[i].shipping_info || 0
     }
-
-    setTimeout(function () {
-      self.updating = false;
-      if (self.needs_updating) self.update();
-    }, 200);
   },
 
+  //calculate and set bar heights and text for a graph
   updateDiv: function (product, data, revenue) {
     var self = this;
 
@@ -122,4 +97,4 @@ Hummingbird.CartEvents.prototype = {
       $('.revenue', self.chartdivs[product]).html('$' + (revenue || 0).toFixed(2));
     }
   }
-};
+});

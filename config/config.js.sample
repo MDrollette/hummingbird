@@ -41,6 +41,7 @@ module.exports = config = {
   "enable_udp": true,
   "udp_port" : 8000,
   "udp_hostname" : "127.0.0.1",
+  "udp_log" : false,
   
   //general MongoDB config
   "database_name": "hummingbird",
@@ -65,6 +66,6 @@ module.exports = config = {
   "day_collection": "metrics_day",
   "day_collection_options": {},
 
-  //every minute, hummingbird can output the aggregate data it is storing in MongoDB to the console
+  //every minute, hummingbird can log the aggregate data it is storing in MongoDB
   "log_metric_data": false
 }

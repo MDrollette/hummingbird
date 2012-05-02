@@ -6,6 +6,7 @@
     <script src="js/websocket.js"></script>
     <script src="js/polymaps.js"></script>
     <script src="js/polymaps-extras.js"></script>
+    <script src="js/widgets/base.js"></script>
     <script src="js/widgets/cart_events.js"></script>
     <script src="js/hummingbird.js"></script>
     <title>Shopping Cart Events</title>
@@ -63,11 +64,8 @@
         //instantiate a new CartEvents object that will handle displaying graphs
         var metrics = ['shipping_info','billing_info','confirmation','purchase'];
         var cart_events = new Hummingbird.CartEvents($('#shopping_info'), hummingbirdSocket.socket, {
-          starting_counts: {}, 
-          starting_revenue: {},
           metrics: metrics
         });
-
 
         //hook up the form to load past data
         $('#load_past_data input').click(function() {
@@ -80,6 +78,7 @@
           $.each(metrics,function(i,metric) {
             hummingbirdSocket.socket.emit('past data '+metric,num,time_unit,function(data) {
               cart_events.onData(metric,data);
+              cart_events.update();
             });
           });
           return false;

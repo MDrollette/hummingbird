@@ -96,7 +96,7 @@ db.open(function (p_db) {
       var udpServer = dgram.createSocket("udp4");
 
       udpServer.on("message", function (message, rinfo) {
-        console.log("message from " + rinfo.address + " : " + rinfo.port);
+        if(config.udp_log) console.log("message from " + rinfo.address + " : " + rinfo.port);
 
         var data = JSON.parse(message);
         hummingbird.insertData(data);
